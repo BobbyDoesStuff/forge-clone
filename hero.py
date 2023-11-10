@@ -30,11 +30,11 @@ class Hero(pygame.sprite.Sprite):
 
     def load_frames(self):
         frame_files = [
-            '/home/bozhidar/Downloads/Attack_Animations/Player_Attack_R.png',
-            '/home/bozhidar/Downloads/Attack_Animations/Player_Attack2_R.png',
-            '/home/bozhidar/Downloads/Attack_Animations/Player_Attack3_R.png',
-            '/home/bozhidar/Downloads/Attack_Animations/Player_Attack4_R.png',
-            '/home/bozhidar/Downloads/Attack_Animations/Player_Attack5_R.png'
+            'assets/Player_Attack_R.png',
+            'assets/Player_Attack2_R.png',
+            'assets/Player_Attack3_R.png',
+            'assets/Player_Attack4_R.png',
+            'assets/Player_Attack5_R.png'
         ]
 
         for file_path in frame_files:

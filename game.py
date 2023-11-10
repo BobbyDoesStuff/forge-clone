@@ -34,6 +34,11 @@ class Game:
         self.button = Button(SCREEN_WIDTH - BUTTON_WIDTH, SCREEN_HEIGHT - BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT, 'Move')
         self.button_group = pygame.sprite.GroupSingle(self.button)
 
+        self.action_queue = []
+        self.initialize_action_queue()
+        self.action_delay = 500  # Delay in milliseconds (0.5 seconds)
+        self.last_action_time = pygame.time.get_ticks()
+
     def create_heroes(self):
         for row, col in itertools.product(range(GRID_ROWS), range(2)):
             x = col * SQUARE_SIZE
@@ -62,6 +67,7 @@ class Game:
 
     def run(self):
         while True:
+            current_time = pygame.time.get_ticks()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -101,23 +107,44 @@ class Game:
                         self.selected_hero.rect.x = event.pos[0] - SQUARE_SIZE / 2
                         self.selected_hero.rect.y = event.pos[1] - SQUARE_SIZE / 2
 
+            # if self.action_queue:
+            #     sprite = self.action_queue.pop(0)
+            #     if isinstance(sprite, Enemy):
+            #         self.process_enemy_turn(sprite)
+            #     elif isinstance(sprite, Hero):
+            #         self.process_hero_turn(sprite)
+            if self.action_queue and current_time - self.last_action_time > self.action_delay:
+                self.last_action_time = current_time
+                hero = self.action_queue.pop(0)
+                self.process_hero_turn(hero)
+
             self.update()
             self.draw()
 
+    def initialize_action_queue(self):
+        # Clear the queue and add all sprites in their turn order
+        self.action_queue.clear()
+        #self.action_queue.extend(self.enemies.sprites())
+        self.action_queue.extend(self.heroes.sprites())
+
     def next_turn(self):
+        # Reset for the next turn
         self.spawn_enemies()
         self.turn_count += 1
-
+        self.initialize_action_queue()
         for hero in self.heroes:
             hero.attacked = False
+        
+        self.process_enemy_turn()
 
+    def process_enemy_turn(self):
         for enemy in self.enemies:
             if not self.should_block_move(enemy):
                 self.move_enemy(enemy)
 
-        self.attack_enemies()
-        self.update()
-        self.draw()
+    def process_hero_turn(self, hero):
+        # Hero attack logic here
+        hero.attack(self.enemies)
 
     def should_block_move(self, enemy):
         return any(
@@ -172,6 +199,7 @@ class Game:
 
     def update(self):
         self.heroes.update()
+        self.enemies.update()
 
         # Check for dead enemies and update gold counter
         for enemy in self.enemies.sprites():
