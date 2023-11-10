@@ -133,16 +133,20 @@ class Game:
         self.action_queue.extend(self.heroes.sprites())
 
     def next_turn(self):
-        # Reset for the next turn
         self.spawn_enemies()
         self.turn_count += 1
         self.initialize_action_queue()
+        will_attack = False
+        self.process_enemy_turn()
         for hero in self.heroes:
             hero.attacked = False
-        
-        self.process_enemy_turn()
-        self.button_active = False
-        self.button.set_color(GREY)
+            if hero.can_attack(self.enemies):  # Check if the hero can attack
+                will_attack = True
+
+        if will_attack:
+            # Disable the button only if there will be attacks
+            self.button_active = False
+            self.button.set_color(GREY)
 
     def process_enemy_turn(self):
         for enemy in self.enemies:

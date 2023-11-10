@@ -82,6 +82,11 @@ class Hero(pygame.sprite.Sprite):
             # Print statement for debugging
             print(f"Hero {self.number} attacked Enemy {target.number}")
 
+    def can_attack(self, enemies):
+        range_ = FRONTLINE_RANGE if self.type == FRONTLINE else BACKLINE_RANGE
+        return any(self.is_in_range(enemy, range_) for enemy in enemies if enemy.health > 0)
+
+
     def is_in_range(self, enemy, range_):
         # Calculate distance to the enemy
         distance = abs(enemy.rect.x - self.rect.x) // SQUARE_SIZE
