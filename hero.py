@@ -11,8 +11,8 @@ class Hero(pygame.sprite.Sprite):
 
         self.type = hero_type
         self.number = number
-        self.font = pygame.font.Font(None, 36)
-        self.text = self.font.render(f'{self.type}{self.number}', True, BLACK)
+        # self.font = pygame.font.Font(None, 36)
+        # self.text = self.font.render(f'{self.type}{self.number}', True, BLACK)
         self.rect.x = x
         self.rect.y = y
 
@@ -25,17 +25,28 @@ class Hero(pygame.sprite.Sprite):
         self.load_frames()  # Call a method to extract frames
         self.frame_index = 0  # Index of the current frame
         self.image = self.frames[self.frame_index]  # Set the initial image
-        self.animation_interval = 50  # 0.5 seconds in milliseconds
+        self.animation_interval = 100  # 0.5 seconds in milliseconds
         self.last_update_time = pygame.time.get_ticks()  # Current time
 
     def load_frames(self):
-        frame_files = [
-            'assets/Player_Attack_R.png',
-            'assets/Player_Attack2_R.png',
-            'assets/Player_Attack3_R.png',
-            'assets/Player_Attack4_R.png',
-            'assets/Player_Attack5_R.png'
-        ]
+        if self.type == FRONTLINE:    
+            frame_files = [
+                'assets/Player_Attack_R.png',
+                'assets/Player_Attack2_R.png',
+                'assets/Player_Attack3_R.png',
+                'assets/Player_Attack4_R.png',
+                'assets/Player_Attack5_R.png'
+            ]
+
+        elif self.type == BACKLINE:
+            frame_files = [
+                'assets/tile000.png',
+                'assets/tile001.png',
+                'assets/tile002.png',
+                'assets/tile003.png',
+                'assets/tile004.png',
+                'assets/tile005.png',
+            ]
 
         for file_path in frame_files:
             frame_image = pygame.image.load(file_path).convert_alpha()
@@ -50,8 +61,8 @@ class Hero(pygame.sprite.Sprite):
         screen.blit(self.image, (image_center_x, image_center_y))
 
         # Draw the text (if you still want to display the text)
-        text_rect = self.text.get_rect(center=(self.rect.x + SQUARE_SIZE / 2, self.rect.y + SQUARE_SIZE / 2))
-        screen.blit(self.text, text_rect)
+        # text_rect = self.text.get_rect(center=(self.rect.x + SQUARE_SIZE / 2, self.rect.y + SQUARE_SIZE / 2))
+        # screen.blit(self.text, text_rect)
 
     def update(self):
         current_time = pygame.time.get_ticks()
