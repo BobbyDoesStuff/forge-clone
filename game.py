@@ -33,6 +33,7 @@ class Game:
         # Create button
         self.button = Button(SCREEN_WIDTH - BUTTON_WIDTH, SCREEN_HEIGHT - BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT, 'Move')
         self.button_group = pygame.sprite.GroupSingle(self.button)
+        self.button_active = True
 
         self.action_queue = []
         self.initialize_action_queue()
@@ -72,19 +73,18 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        if self.button.rect.collidepoint(event.pos):
-                            self.next_turn()
-                        else:
-                            for hero in self.heroes:
-                                if hero.rect.collidepoint(event.pos):
-                                    self.dragging = True
-                                    self.selected_hero = hero
-                                    self.start_x = hero.rect.x  # store starting position
-                                    self.start_y = hero.rect.y
-                                    break
+                
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    if self.button.rect.collidepoint(event.pos) and self.button_active:
+                        self.next_turn()
+                    else:
+                        for hero in self.heroes:
+                            if hero.rect.collidepoint(event.pos):
+                                self.dragging = True
+                                self.selected_hero = hero
+                                self.start_x = hero.rect.x  # store starting position
+                                self.start_y = hero.rect.y
+                                break
 
                 elif event.type == pygame.MOUSEBUTTONUP:
                     if event.button == 1 and self.dragging:
@@ -118,6 +118,11 @@ class Game:
                 hero = self.action_queue.pop(0)
                 self.process_hero_turn(hero)
 
+            # If the attack queue is empty, re-enable the button
+            if not self.action_queue and not self.button_active:
+                self.button_active = True
+                self.button.set_color(BLACK)
+
             self.update()
             self.draw()
 
@@ -136,6 +141,8 @@ class Game:
             hero.attacked = False
         
         self.process_enemy_turn()
+        self.button_active = False
+        self.button.set_color(GREY)
 
     def process_enemy_turn(self):
         for enemy in self.enemies:
