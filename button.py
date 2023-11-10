@@ -22,4 +22,8 @@ class Button(pygame.sprite.Sprite):
 
     def set_color(self, color):
         self.image.fill(color)
+        # Redraw the text over the new background color
+        text_surface = self.font.render("Move", True, WHITE)  # Replace "Move" with your button text
+        text_rect = text_surface.get_rect(center=(self.rect.width / 2, self.rect.height / 2))
+        self.image.blit(text_surface, text_rect)
 
