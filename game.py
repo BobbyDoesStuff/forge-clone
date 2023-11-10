@@ -210,7 +210,7 @@ class Game:
 
     def update(self):
         self.heroes.update()
-        self.enemies.update()
+        #self.enemies.update()
 
         # Check for dead enemies and update gold counter
         for enemy in self.enemies.sprites():
