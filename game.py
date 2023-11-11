@@ -139,9 +139,15 @@ class Game:
 
     def next_turn(self):
         self.spawn_enemies()
-        self.bg_x -= SQUARE_SIZE
-        if self.bg_x <= -2 * SQUARE_SIZE:  # Loop around when reaching the end
-            self.bg_x = 0
+        # Check if any enemy is in the first column
+        enemy_in_first_col = any(enemy.rect.x == 2 * SQUARE_SIZE for enemy in self.enemies)
+
+        if not enemy_in_first_col:
+            # Move the background
+            self.bg_x -= SQUARE_SIZE
+            if self.bg_x <= -2 * SQUARE_SIZE:  # Loop around when reaching the end
+                self.bg_x = 0
+
         self.turn_count += 1
         self.initialize_action_queue()
         will_attack = False
