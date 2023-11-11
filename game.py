@@ -29,6 +29,9 @@ class Game:
         
         # Initialize the screen
         self.screen = pygame.display.set_mode((self.grid_width, SCREEN_HEIGHT))
+        self.bg_image = pygame.image.load("assets/Desert-Game-Background-midjourney-prompt.jpg").convert()
+        self.bg_image = pygame.transform.scale(self.bg_image, (GRID_COLS * SQUARE_SIZE, GRID_ROWS * SQUARE_SIZE))
+
 
         # Create button
         self.button = Button(SCREEN_WIDTH - BUTTON_WIDTH, SCREEN_HEIGHT - BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT, 'Move')
@@ -225,8 +228,12 @@ class Game:
     def draw(self):
         self.screen.fill(WHITE)
 
+        # Draw the background image
+        bg_rect = self.bg_image.get_rect()
+        bg_rect.topleft = (2 * SQUARE_SIZE, 100)  # Adjust the position as needed
+        self.screen.blit(self.bg_image, bg_rect)
         pygame.draw.rect(self.screen, GREEN, (0, 100, 2 * SQUARE_SIZE, 5 * SQUARE_SIZE))
-        pygame.draw.rect(self.screen, BLACK, (0, 100, 2 * SQUARE_SIZE, 5 * SQUARE_SIZE), 3)  
+        pygame.draw.rect(self.screen, BLACK, (0, 100, 2 * SQUARE_SIZE, 5 * SQUARE_SIZE), 3)
 
         for x in range(SQUARE_SIZE, 2 * SQUARE_SIZE, SQUARE_SIZE):
             pygame.draw.line(self.screen, BLACK, (x, 100), (x, 600), 1)
