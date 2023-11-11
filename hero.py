@@ -80,6 +80,8 @@ class Hero(pygame.sprite.Sprite):
         # Define attack range based on hero type
         range_ = FRONTLINE_RANGE if self.type == FRONTLINE else BACKLINE_RANGE
 
+        self.attacked = False
+
         if target := next(
             (
                 enemy
@@ -99,7 +101,9 @@ class Hero(pygame.sprite.Sprite):
 
 
     def is_in_range(self, enemy, range_):
-        # Calculate distance to the enemy
-        distance = abs(enemy.rect.x - self.rect.x) // SQUARE_SIZE
-        # Check if the enemy is within the range
-        return distance <= range_
+        # Calculate horizontal and vertical distance to the enemy
+        distance_x = abs(enemy.rect.x - self.rect.x) // SQUARE_SIZE
+        distance_y = abs(enemy.rect.y - self.rect.y) // SQUARE_SIZE
+
+        # Check if the enemy is within the square-shaped attack range
+        return distance_x <= range_ and distance_y <= range_
