@@ -29,6 +29,7 @@ class Game:
         
         # Initialize the screen
         self.screen = pygame.display.set_mode((self.grid_width, SCREEN_HEIGHT))
+        self.bg_x = 2 * SQUARE_SIZE  # Starting x-coordinate of the background
         self.bg_image = pygame.image.load("assets/Desert-Game-Background-midjourney-prompt.jpg").convert()
         self.bg_image = pygame.transform.scale(self.bg_image, (GRID_COLS * SQUARE_SIZE, GRID_ROWS * SQUARE_SIZE))
 
@@ -137,6 +138,7 @@ class Game:
 
     def next_turn(self):
         self.spawn_enemies()
+        self.bg_x -= SQUARE_SIZE
         self.turn_count += 1
         self.initialize_action_queue()
         will_attack = False
@@ -232,8 +234,9 @@ class Game:
         bg_rect = self.bg_image.get_rect()
         bg_rect.topleft = (2 * SQUARE_SIZE, 100)  # Adjust the position as needed
         self.screen.blit(self.bg_image, bg_rect)
-        pygame.draw.rect(self.screen, GREEN, (0, 100, 2 * SQUARE_SIZE, 5 * SQUARE_SIZE))
+        #pygame.draw.rect(self.screen, GREEN, (0, 100, 2 * SQUARE_SIZE, 5 * SQUARE_SIZE))
         pygame.draw.rect(self.screen, BLACK, (0, 100, 2 * SQUARE_SIZE, 5 * SQUARE_SIZE), 3)
+        self.screen.blit(self.bg_image, (self.bg_x, 100))
 
         for x in range(SQUARE_SIZE, 2 * SQUARE_SIZE, SQUARE_SIZE):
             pygame.draw.line(self.screen, BLACK, (x, 100), (x, 600), 1)
