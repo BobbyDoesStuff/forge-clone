@@ -213,13 +213,6 @@ class Game:
                         self.selected_hero.rect.y = event.pos[1] - SQUARE_SIZE // 2
                         self.check_for_merge_highlight(self.selected_hero)
 
-
-            # if self.action_queue:
-            #     sprite = self.action_queue.pop(0)
-            #     if isinstance(sprite, Enemy):
-            #         self.process_enemy_turn(sprite)
-            #     elif isinstance(sprite, Hero):
-            #         self.process_hero_turn(sprite)
             if self.action_queue and current_time - self.last_action_time > self.action_delay:
                 self.last_action_time = current_time
                 hero = self.action_queue.pop(0)
