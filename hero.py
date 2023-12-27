@@ -2,8 +2,15 @@ import pygame
 from consts import *
 
 class Hero(pygame.sprite.Sprite):
-    def __init__(self, x, y, hero_type, number):
+    def __init__(self, x, y, hero_type, number, tier=1):
         super().__init__()
+
+
+        self.tier = tier  # New attribute for hero tier
+
+        self.max_health = 100 + 20 * (self.tier - 1)  # Increase health for higher-tier heroes
+        self.attack_power = 20 + 20 * (self.tier - 1)  # Increase attack for higher-tier heroes
+
 
         self.image = pygame.Surface([SQUARE_SIZE, SQUARE_SIZE])
         self.image.fill(WHITE)
@@ -18,7 +25,6 @@ class Hero(pygame.sprite.Sprite):
 
         self.attacked = False  # flag to indicate if the hero has attacked
 
-        self.max_health = 100
         self.health = self.max_health
 
         self.frames = []  # List to hold each frame of the animation
@@ -77,27 +83,32 @@ class Hero(pygame.sprite.Sprite):
 
 
     def attack(self, enemies):
-        # Define attack range based on hero type
-        range_ = FRONTLINE_RANGE if self.type == FRONTLINE else BACKLINE_RANGE
-
+        # Updated attack method to use attack_power
         self.attacked = False
 
         if target := next(
             (
                 enemy
                 for enemy in enemies
-                if enemy.health > 0 and self.is_in_range(enemy, range_)
+                if enemy.health > 0 and self.is_in_range(enemy, self.get_attack_range())
             ),
             None,
         ):
-            target.damage(20)  # Damage amount
+            target.damage(self.attack_power)  # Use attack_power for damage
             self.attacked = True
             # Print statement for debugging
-            print(f"Hero {self.number} attacked Enemy {target.number}")
+            print(f"Tier {self.tier} Hero {self.number} attacked Enemy {target.number}")
 
     def can_attack(self, enemies):
+        # Define attack range based on hero type
         range_ = FRONTLINE_RANGE if self.type == FRONTLINE else BACKLINE_RANGE
+
+        # Check if any enemy is within the attack range
         return any(self.is_in_range(enemy, range_) for enemy in enemies if enemy.health > 0)
+
+    def get_attack_range(self):
+        # Return attack range based on hero type
+        return FRONTLINE_RANGE if self.type == FRONTLINE else BACKLINE_RANGE
 
 
     def is_in_range(self, enemy, range_):

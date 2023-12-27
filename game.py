@@ -11,12 +11,17 @@ class Game:
     def __init__(self):
         self.screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
         pygame.display.set_caption("Battle Stage")
+        self.all_sprites = pygame.sprite.Group()  # Initialize the all_sprites group
 
         self.clock = pygame.time.Clock()
 
         self.heroes = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
         self.turn_count = 0
+        for hero in self.heroes:
+            self.all_sprites.add(hero)
+        for enemy in self.enemies:
+            self.all_sprites.add(enemy)
 
         self.dragging = False
         self.selected_hero = None
@@ -69,7 +74,67 @@ class Game:
         pygame.draw.rect(self.screen, (0, 128, 0), (x, y, bar_length, 5))  # Dark green bar for remaining health
         pygame.draw.rect(self.screen, BLACK, (x, y, length, 5), 1)  # Black border
 
+    def handle_mouse_button_up(self, event):
+        if self.dragging:
+            self.dragging = False
+            print("Hero Dropped")  # Debug print
+            if not self.handle_hero_merging(self.selected_hero):
+                # Only snap to grid if merging didn't happen
+                self.snap_hero_to_grid(self.selected_hero)
 
+    def handle_hero_merging(self, hero):
+        adjacent_heroes = self.get_adjacent_heroes_of_same_type(hero)
+        if len(adjacent_heroes) >= 2:
+            self.merge_heroes(hero, adjacent_heroes)
+            return True  # Indicate that merging occurred
+        return False  # Indicate that no merging occurred
+
+    def get_adjacent_heroes_of_same_type(self, hero):
+        return [
+            other_hero
+            for other_hero in self.heroes
+            if other_hero.type == hero.type
+            and other_hero != hero
+            and self.are_adjacent(hero, other_hero)
+        ]
+
+    def are_adjacent(self, hero1, hero2):
+        return (abs(hero1.rect.x - hero2.rect.x) <= SQUARE_SIZE and hero1.rect.y == hero2.rect.y) or \
+               (abs(hero1.rect.y - hero2.rect.y) <= SQUARE_SIZE and hero1.rect.x == hero2.rect.x)
+
+    def merge_heroes(self, hero, adjacent_heroes):
+        # Merge heroes and create a new, more powerful hero
+        new_x, new_y = hero.rect.x, hero.rect.y  # Position for the new hero
+        new_tier = hero.tier + 1  # Increase the tier
+        for h in adjacent_heroes + [hero]:
+            self.heroes.remove(h)
+            self.all_sprites.remove(h)
+        new_hero = Hero(new_x, new_y, hero.type, number=1, tier=new_tier)
+        self.heroes.add(new_hero)
+        self.all_sprites.add(new_hero)
+
+    def snap_hero_to_grid(self, hero):
+        # Snapping logic
+        self.dragging = False
+        # Snap to nearest grid cell
+        grid_x = round(self.selected_hero.rect.x / SQUARE_SIZE) * SQUARE_SIZE
+        grid_y = round(self.selected_hero.rect.y / SQUARE_SIZE) * SQUARE_SIZE
+        if grid_x < 2 * SQUARE_SIZE and 100 <= grid_y < 600:  # Updated grid_y condition
+            self.selected_hero.rect.x = grid_x
+            self.selected_hero.rect.y = grid_y
+            # Check for hero at the new position
+            for hero in self.heroes:
+                if hero != self.selected_hero and hero.rect.collidepoint(grid_x, grid_y):
+                    # Swap positions
+                    hero.rect.x = self.start_x
+                    hero.rect.y = self.start_y
+
+    def handle_hero_merging(self, hero):
+        # Merging logic
+        adjacent_heroes = self.get_adjacent_heroes_of_same_type(hero)
+        print(f"Adjacent Heroes: {len(adjacent_heroes)}")  # Debug print
+        if len(adjacent_heroes) >= 2:
+            self.merge_heroes(hero, adjacent_heroes)
 
     def run(self):
         while True:
@@ -78,39 +143,33 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                
+
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    # Check if the move button was clicked
                     if self.button.rect.collidepoint(event.pos) and self.button_active:
                         self.next_turn()
                     else:
+                        # Start dragging a hero if clicked
                         for hero in self.heroes:
-                            if hero.rect.collidepoint(event.pos):
+                            if hero.rect.collidepoint(event.pos) and not self.dragging:
                                 self.dragging = True
                                 self.selected_hero = hero
-                                self.start_x = hero.rect.x  # store starting position
+                                self.start_x = hero.rect.x  # Store starting position
                                 self.start_y = hero.rect.y
                                 break
 
-                elif event.type == pygame.MOUSEBUTTONUP:
-                    if event.button == 1 and self.dragging:
-                        self.dragging = False
-                        # Snap to nearest grid cell
-                        grid_x = round(self.selected_hero.rect.x / SQUARE_SIZE) * SQUARE_SIZE
-                        grid_y = round(self.selected_hero.rect.y / SQUARE_SIZE) * SQUARE_SIZE
-                        if grid_x < 2 * SQUARE_SIZE and 100 <= grid_y < 600:  # Updated grid_y condition
-                            self.selected_hero.rect.x = grid_x
-                            self.selected_hero.rect.y = grid_y
-                            # Check for hero at the new position
-                            for hero in self.heroes:
-                                if hero != self.selected_hero and hero.rect.collidepoint(grid_x, grid_y):
-                                    # Swap positions
-                                    hero.rect.x = self.start_x
-                                    hero.rect.y = self.start_y
+                elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                    # When the mouse button is released, stop dragging and handle merging
+                    if self.dragging:
+                        self.snap_hero_to_grid(self.selected_hero)
+                        self.handle_hero_merging(self.selected_hero)
+                        self.dragging = False  # Stop dragging
 
                 elif event.type == pygame.MOUSEMOTION:
+                    # While dragging, update the position of the selected hero
                     if self.dragging:
-                        self.selected_hero.rect.x = event.pos[0] - SQUARE_SIZE / 2
-                        self.selected_hero.rect.y = event.pos[1] - SQUARE_SIZE / 2
+                        self.selected_hero.rect.x = event.pos[0] - SQUARE_SIZE // 2
+                        self.selected_hero.rect.y = event.pos[1] - SQUARE_SIZE // 2
 
             # if self.action_queue:
             #     sprite = self.action_queue.pop(0)
