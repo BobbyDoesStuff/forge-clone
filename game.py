@@ -107,19 +107,17 @@ class Game:
 
     def snap_hero_to_grid(self, hero):
         # Snapping logic
-        self.dragging = False
-        # Snap to nearest grid cell
-        grid_x = round(self.selected_hero.rect.x / SQUARE_SIZE) * SQUARE_SIZE
-        grid_y = round(self.selected_hero.rect.y / SQUARE_SIZE) * SQUARE_SIZE
-        if grid_x < 2 * SQUARE_SIZE and 100 <= grid_y < 600:  # Updated grid_y condition
-            self.selected_hero.rect.x = grid_x
-            self.selected_hero.rect.y = grid_y
-            # Check for hero at the new position
-            for hero in self.heroes:
-                if hero != self.selected_hero and hero.rect.collidepoint(grid_x, grid_y):
-                    # Swap positions
-                    hero.rect.x = self.start_x
-                    hero.rect.y = self.start_y
+        grid_x = round(hero.rect.x / SQUARE_SIZE) * SQUARE_SIZE
+        grid_y = round(hero.rect.y / SQUARE_SIZE) * SQUARE_SIZE
+
+        # Check if within hero grid bounds (adjust bounds as necessary)
+        if 0 <= grid_x < 2 * SQUARE_SIZE and 100 <= grid_y < 600:
+            hero.rect.x = grid_x
+            hero.rect.y = grid_y
+        else:
+            # Snap back to the original position if outside bounds
+            hero.rect.x = self.start_x
+            hero.rect.y = self.start_y
     
     def get_merge_group(self, hero):
         """Find all heroes that form a merge group with the given hero."""
