@@ -74,14 +74,6 @@ class Game:
         pygame.draw.rect(self.screen, (0, 128, 0), (x, y, bar_length, 5))  # Dark green bar for remaining health
         pygame.draw.rect(self.screen, BLACK, (x, y, length, 5), 1)  # Black border
 
-    def handle_mouse_button_up(self, event):
-        if self.dragging:
-            self.dragging = False
-            print("Hero Dropped")  # Debug print
-            if not self.handle_hero_merging(self.selected_hero):
-                # Only snap to grid if merging didn't happen
-                self.snap_hero_to_grid(self.selected_hero)
-
     def handle_hero_merging(self, hero):
         adjacent_heroes = self.get_adjacent_heroes_of_same_type(hero)
         if len(adjacent_heroes) >= 2:
