@@ -14,6 +14,7 @@ class Hero(pygame.sprite.Sprite):
 
         self.image = pygame.Surface([SQUARE_SIZE, SQUARE_SIZE])
         self.image.fill(WHITE)
+        self.original_image = self.image.copy()
         self.rect = self.image.get_rect()
 
         self.type = hero_type
@@ -118,3 +119,20 @@ class Hero(pygame.sprite.Sprite):
 
         # Check if the enemy is within the square-shaped attack range
         return distance_x <= range_ and distance_y <= range_
+
+    def highlight(self):
+        # Store the original image if not already stored
+        if not hasattr(self, 'original_image'):
+            self.original_image = self.image.copy()
+
+        # Modify the alpha value only for non-fully transparent pixels
+        for x in range(self.image.get_width()):
+            for y in range(self.image.get_height()):
+                color = self.image.get_at((x, y))
+                if color.a != 0:  # Check if the pixel is not fully transparent
+                    self.image.set_at((x, y), (color.r, color.g, color.b, 156))  # 66% opacity
+
+    def reset_background(self):
+        # Restore the original image if it was stored
+        if hasattr(self, 'original_image'):
+            self.image = self.original_image.copy()

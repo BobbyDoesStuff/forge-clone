@@ -128,13 +128,57 @@ class Game:
                     # Swap positions
                     hero.rect.x = self.start_x
                     hero.rect.y = self.start_y
+    
+    def get_merge_group(self, hero):
+        """Find all heroes that form a merge group with the given hero."""
+        merge_group = set()
+        to_check = [hero]
+
+        while to_check:
+            current_hero = to_check.pop()
+            merge_group.add(current_hero)
+
+            for other_hero in self.heroes:
+                if other_hero.type == hero.type and other_hero not in merge_group and self.are_adjacent(current_hero, other_hero):
+                    to_check.append(other_hero)
+
+        return merge_group if len(merge_group) >= 3 else set()
+
 
     def handle_hero_merging(self, hero):
-        # Merging logic
-        adjacent_heroes = self.get_adjacent_heroes_of_same_type(hero)
-        print(f"Adjacent Heroes: {len(adjacent_heroes)}")  # Debug print
-        if len(adjacent_heroes) >= 2:
-            self.merge_heroes(hero, adjacent_heroes)
+        """Handle merging of heroes."""
+        if merge_group := self.get_merge_group(hero):
+            self.merge_heroes(merge_group)
+
+    def merge_heroes(self, merge_group):
+        """Merge the heroes in the merge group."""
+        # You can choose any hero's position for the new merged hero
+        new_x, new_y = next(iter(merge_group)).rect.x, next(iter(merge_group)).rect.y
+        new_tier = next(iter(merge_group)).tier + 1
+
+        for hero in merge_group:
+            self.heroes.remove(hero)
+            # If using all_sprites, also remove from there
+            # self.all_sprites.remove(hero)
+
+        new_hero = Hero(new_x, new_y, next(iter(merge_group)).type, number=1, tier=new_tier)
+        self.heroes.add(new_hero)
+        # If using all_sprites, also add to there
+        # self.all_sprites.add(new_hero)
+
+    def check_for_merge_highlight(self, dragged_hero):
+        """Check and apply highlight to heroes that can be merged."""
+        if merge_group := self.get_merge_group(dragged_hero):
+            for hero in merge_group:
+                hero.highlight()
+        else:
+            # Reset highlight if conditions are not met
+            self.reset_all_heroes_background()
+
+    def reset_all_heroes_background(self):
+        """Reset background of all heroes."""
+        for hero in self.heroes:
+            hero.reset_background()
 
     def run(self):
         while True:
@@ -145,13 +189,11 @@ class Game:
                     sys.exit()
 
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    # Check if the move button was clicked
                     if self.button.rect.collidepoint(event.pos) and self.button_active:
                         self.next_turn()
                     else:
-                        # Start dragging a hero if clicked
                         for hero in self.heroes:
-                            if hero.rect.collidepoint(event.pos) and not self.dragging:
+                            if hero.rect.collidepoint(event.pos):
                                 self.dragging = True
                                 self.selected_hero = hero
                                 self.start_x = hero.rect.x  # Store starting position
@@ -159,17 +201,18 @@ class Game:
                                 break
 
                 elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                    # When the mouse button is released, stop dragging and handle merging
                     if self.dragging:
                         self.snap_hero_to_grid(self.selected_hero)
                         self.handle_hero_merging(self.selected_hero)
-                        self.dragging = False  # Stop dragging
+                        self.reset_all_heroes_background()
+                        self.dragging = False
 
                 elif event.type == pygame.MOUSEMOTION:
-                    # While dragging, update the position of the selected hero
                     if self.dragging:
                         self.selected_hero.rect.x = event.pos[0] - SQUARE_SIZE // 2
                         self.selected_hero.rect.y = event.pos[1] - SQUARE_SIZE // 2
+                        self.check_for_merge_highlight(self.selected_hero)
+
 
             # if self.action_queue:
             #     sprite = self.action_queue.pop(0)
