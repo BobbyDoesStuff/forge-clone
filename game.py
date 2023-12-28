@@ -106,14 +106,29 @@ class Game:
         self.all_sprites.add(new_hero)
 
     def snap_hero_to_grid(self, hero):
-        # Snapping logic
+        # Calculate the grid cell coordinates
         grid_x = round(hero.rect.x / SQUARE_SIZE) * SQUARE_SIZE
         grid_y = round(hero.rect.y / SQUARE_SIZE) * SQUARE_SIZE
 
-        # Check if within hero grid bounds (adjust bounds as necessary)
+        # Check if within hero grid bounds
         if 0 <= grid_x < 2 * SQUARE_SIZE and 100 <= grid_y < 600:
-            hero.rect.x = grid_x
-            hero.rect.y = grid_y
+            if target_hero := next(
+                (
+                    other_hero
+                    for other_hero in self.heroes
+                    if other_hero != hero
+                    and other_hero.rect.x == grid_x
+                    and other_hero.rect.y == grid_y
+                ),
+                None,
+            ):
+                # Swap positions with the target hero
+                hero.rect.x, target_hero.rect.x = target_hero.rect.x, self.start_x
+                hero.rect.y, target_hero.rect.y = target_hero.rect.y, self.start_y
+            else:
+                # Move the hero to the grid cell if no hero to swap with
+                hero.rect.x = grid_x
+                hero.rect.y = grid_y
         else:
             # Snap back to the original position if outside bounds
             hero.rect.x = self.start_x
