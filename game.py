@@ -187,49 +187,69 @@ class Game:
 
     def run(self):
         while True:
-            current_time = pygame.time.get_ticks()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+            self.handle_events()
+            self.process_actions()
+            self.update()
+            self.draw()
 
-                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    if self.button.rect.collidepoint(event.pos) and self.button_active:
-                        self.next_turn()
-                    else:
-                        for hero in self.heroes:
-                            if hero.rect.collidepoint(event.pos):
-                                self.dragging = True
-                                self.selected_hero = hero
-                                self.start_x = hero.rect.x  # Store starting position
-                                self.start_y = hero.rect.y
-                                break
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                self.handle_mouse_button_down(event)
+            elif event.type == pygame.MOUSEBUTTONUP:
+                self.handle_mouse_button_up(event)
+            elif event.type == pygame.MOUSEMOTION:
+                self.handle_mouse_motion(event)
 
-                elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                    if self.dragging:
-                        self.snap_hero_to_grid(self.selected_hero)
-                        self.handle_hero_merging(self.selected_hero)
-                        self.reset_all_heroes_background()
-                        self.dragging = False
+    def handle_mouse_button_down(self, event):
+        if event.button == 1:
+            if self.button.rect.collidepoint(event.pos) and self.button_active:
+                self.next_turn()
+            else:
+                self.start_dragging_hero(event)
 
-                elif event.type == pygame.MOUSEMOTION:
-                    if self.dragging:
-                        self.selected_hero.rect.x = event.pos[0] - SQUARE_SIZE // 2
-                        self.selected_hero.rect.y = event.pos[1] - SQUARE_SIZE // 2
-                        self.check_for_merge_highlight(self.selected_hero)
+    def handle_mouse_button_up(self, event):
+        if event.button == 1 and self.dragging:
+            self.finish_dragging_hero()
 
-            if self.action_queue and current_time - self.last_action_time > self.action_delay:
-                self.last_action_time = current_time
-                hero = self.action_queue.pop(0)
-                self.process_hero_turn(hero)
+    def handle_mouse_motion(self, event):
+        if self.dragging:
+            self.drag_hero(event)
+
+    def start_dragging_hero(self, event):
+        for hero in self.heroes:
+            if hero.rect.collidepoint(event.pos):
+                self.dragging = True
+                self.selected_hero = hero
+                self.start_x = hero.rect.x
+                self.start_y = hero.rect.y
+                break
+
+    def finish_dragging_hero(self):
+        self.snap_hero_to_grid(self.selected_hero)
+        self.handle_hero_merging(self.selected_hero)
+        self.reset_all_heroes_background()
+        self.dragging = False
+
+    def drag_hero(self, event):
+        self.selected_hero.rect.x = event.pos[0] - SQUARE_SIZE // 2
+        self.selected_hero.rect.y = event.pos[1] - SQUARE_SIZE // 2
+        self.check_for_merge_highlight(self.selected_hero)
+
+    def process_actions(self):
+        current_time = pygame.time.get_ticks()
+        if self.action_queue and current_time - self.last_action_time > self.action_delay:
+            self.last_action_time = current_time
+            hero = self.action_queue.pop(0)
+            self.process_hero_turn(hero)
 
             # If the attack queue is empty, re-enable the button
             if not self.action_queue and not self.button_active:
                 self.button_active = True
                 self.button.set_color(BLACK)
-
-            self.update()
-            self.draw()
 
     def initialize_action_queue(self):
         # Clear the queue and add all sprites in their turn order
