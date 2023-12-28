@@ -183,7 +183,7 @@ class Game:
     def reset_all_heroes_background(self):
         """Reset background of all heroes."""
         for hero in self.heroes:
-            hero.reset_background()
+            hero.reset_background() #test
 
     def run(self):
         while True:
