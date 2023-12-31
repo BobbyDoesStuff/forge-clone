@@ -265,7 +265,7 @@ class Game:
         if not enemy_in_first_col:
             # Move the background
             self.bg_x -= SQUARE_SIZE
-            if self.bg_x <= -2 * SQUARE_SIZE:  # Loop around when reaching the end
+            if self.bg_x <= -16 * SQUARE_SIZE:
                 self.bg_x = 0
 
         self.turn_count += 1
