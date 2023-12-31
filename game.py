@@ -35,9 +35,11 @@ class Game:
         # Initialize the screen
         self.screen = pygame.display.set_mode((self.grid_width, SCREEN_HEIGHT))
         self.bg_image = pygame.image.load("assets/Desert-Game-Background-midjourney-prompt.jpg").convert()
-        total_grid_width = (GRID_COLS + 2) * SQUARE_SIZE
-        self.bg_image = pygame.transform.scale(self.bg_image, (total_grid_width, GRID_ROWS * SQUARE_SIZE))
+        self.total_grid_width = (GRID_COLS + 2) * SQUARE_SIZE
+        self.bg_image = pygame.transform.scale(self.bg_image, (self.total_grid_width, GRID_ROWS * SQUARE_SIZE))
         self.bg_x = 0 #starting coordinate of the background image
+        self.bg_x2 = self.total_grid_width  # Position of the second background image
+
 
 
         # Create button
@@ -263,10 +265,16 @@ class Game:
         enemy_in_first_col = any(enemy.rect.x == 2 * SQUARE_SIZE for enemy in self.enemies)
 
         if not enemy_in_first_col:
-            # Move the background
             self.bg_x -= SQUARE_SIZE
-            if self.bg_x <= -16 * SQUARE_SIZE:
-                self.bg_x = 0
+            self.bg_x2 -= SQUARE_SIZE
+
+            # Reset the position of the first image if it moves out of the screen
+            if self.bg_x <= -self.total_grid_width:
+                self.bg_x = self.bg_x2 + self.total_grid_width
+
+            # Reset the position of the second image if it moves out of the screen
+            if self.bg_x2 <= -self.total_grid_width:
+                self.bg_x2 = self.bg_x + self.total_grid_width
 
         self.turn_count += 1
         self.initialize_action_queue()
@@ -366,6 +374,8 @@ class Game:
         #pygame.draw.rect(self.screen, GREEN, (0, 100, 2 * SQUARE_SIZE, 5 * SQUARE_SIZE))
         pygame.draw.rect(self.screen, BLACK, (0, 100, 2 * SQUARE_SIZE, 5 * SQUARE_SIZE), 3)
         self.screen.blit(self.bg_image, (self.bg_x, 100))
+        self.screen.blit(self.bg_image, (self.bg_x2, 100))
+
 
         for x in range(SQUARE_SIZE, 2 * SQUARE_SIZE, SQUARE_SIZE):
             pygame.draw.line(self.screen, BLACK, (x, 100), (x, 600), 1)
