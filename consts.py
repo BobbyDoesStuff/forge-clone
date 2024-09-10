@@ -4,6 +4,7 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 GREY = (200, 200, 200)  # A light grey color
+YELLOW = (255, 255, 0)
 
 
 # Screen dimensions

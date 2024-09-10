@@ -19,10 +19,12 @@ class Enemy(pygame.sprite.Sprite):
         self.number = Enemy.enemy_count
         Enemy.enemy_count += 1
 
-        # Set up font
         self.font = pygame.font.Font(None, 36)
         self.text = self.font.render(str(self.number), True, (0, 0, 0))
         self.text_rect = self.text.get_rect(center=(SQUARE_SIZE / 2, SQUARE_SIZE / 2))
+
+        self.targeted = False
+        self.original_color = RED
 
     def draw(self, window):
         window.blit(self.image, (self.rect.x, self.rect.y))
@@ -35,5 +37,15 @@ class Enemy(pygame.sprite.Sprite):
 
     def damage(self, amount):
         self.health -= amount
-        print(f"{self.number}'s remaining health:{self.health}")
+        print(f"Enemy {self.number}'s remaining health: {self.health}")
         self.health = max(self.health, 0)
+        if self.health <= 0:
+            self.kill()  # Remove the enemy from all sprite groups
+
+    def target(self):
+        self.targeted = True
+        self.image.fill(YELLOW)
+
+    def untarget(self):
+        self.targeted = False
+        self.image.fill(self.original_color)

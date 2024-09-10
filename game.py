@@ -26,6 +26,7 @@ class Game:
         self.dragging = False
         self.selected_hero = None
         self.gold = 0
+        self.targeted_enemy = None
         self.create_heroes()
         self.create_enemies()
 
@@ -207,11 +208,24 @@ class Game:
                 self.handle_mouse_motion(event)
 
     def handle_mouse_button_down(self, event):
-        if event.button == 1:
+        if event.button == 1:  # Left mouse button
             if self.button.rect.collidepoint(event.pos) and self.button_active:
                 self.next_turn()
+            elif clicked_enemy := self.get_clicked_enemy(event.pos):
+                self.set_target(clicked_enemy)
             else:
                 self.start_dragging_hero(event)
+
+    def get_clicked_enemy(self, pos):
+        return next(
+            (enemy for enemy in self.enemies if enemy.rect.collidepoint(pos)), None
+        )
+
+    def set_target(self, enemy):
+        if self.targeted_enemy:
+            self.targeted_enemy.untarget()
+        self.targeted_enemy = enemy
+        enemy.target()
 
     def handle_mouse_button_up(self, event):
         if event.button == 1 and self.dragging:
@@ -296,7 +310,14 @@ class Game:
                 self.move_enemy(enemy)
 
     def process_hero_turn(self, hero):
-        # Hero attack logic here
+        if self.targeted_enemy:
+            if self.targeted_enemy.health <= 0 or self.targeted_enemy not in self.enemies:
+                self.targeted_enemy = None  # Clear the target if it's dead or removed
+            elif hero.can_attack_target(self.targeted_enemy):
+                hero.attack_target(self.targeted_enemy)
+                return
+        
+        # If no valid target, fall back to normal attack
         hero.attack(self.enemies)
 
     def should_block_move(self, enemy):
@@ -355,12 +376,14 @@ class Game:
         #self.enemies.update()
 
         # Check for dead enemies and update gold counter
-        for enemy in self.enemies.sprites():
+        for enemy in self.enemies.copy():  # Use a copy to safely modify during iteration
             if enemy.health <= 0:
-                if enemy in self.enemies:  # Check if enemy is still in the group before removing and updating gold
-                    self.gold += 1  # Increase gold counter
-                    self.enemies.remove(enemy)  # Remove dead enemy
+                if enemy in self.enemies:
+                    self.gold += 1
+                    self.enemies.remove(enemy)
                     print(f"enemy {enemy.number} killed")
+                    if enemy == self.targeted_enemy:
+                        self.targeted_enemy = None  # Clear the target if it's killed
             else:
                 enemy.update()
 
