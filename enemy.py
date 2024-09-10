@@ -32,15 +32,12 @@ class Enemy(pygame.sprite.Sprite):
 
     def update(self):
         if self.health <= 0:
-            print(f"Enemy {self.number} died.")
-            self.kill()
+            print(f"Enemy {self.number} health reached 0.")
 
     def damage(self, amount):
         self.health -= amount
         print(f"Enemy {self.number}'s remaining health: {self.health}")
         self.health = max(self.health, 0)
-        if self.health <= 0:
-            self.kill()  # Remove the enemy from all sprite groups
 
     def target(self):
         self.targeted = True

@@ -378,12 +378,11 @@ class Game:
         # Check for dead enemies and update gold counter
         for enemy in self.enemies.copy():  # Use a copy to safely modify during iteration
             if enemy.health <= 0:
-                if enemy in self.enemies:
-                    self.gold += 1
-                    self.enemies.remove(enemy)
-                    print(f"enemy {enemy.number} killed")
-                    if enemy == self.targeted_enemy:
-                        self.targeted_enemy = None  # Clear the target if it's killed
+                self.gold += 1  # Increment gold counter
+                self.enemies.remove(enemy)  # Remove from the group
+                if enemy == self.targeted_enemy:
+                    self.targeted_enemy = None  # Clear the target if it's killed
+                print(f"Enemy {enemy.number} killed. Gold: {self.gold}")
             else:
                 enemy.update()
 
